@@ -60,7 +60,7 @@
 
 // Содержание
 #set outline(indent: INDENT, depth: 3, title: context {text(size: TEXT-SIZE, upper[#h(
-  (page.width - MARGIN.left - 12.5 * MARGIN.right - measure(text(size: TEXT-SIZE, upper[содержание])).width) / 2
+  (page.width - MARGIN.left - 14.5 * MARGIN.right - measure(text(size: TEXT-SIZE, upper[содержание])).width) / 2
 )содержание])})
 #show outline: set block(below: INDENT / 2)
 #show outline: it => {
