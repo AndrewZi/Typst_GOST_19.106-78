@@ -11,7 +11,7 @@
 #let JUSTIFY = true
 #let PAGE-NUMBERING = "1"
 #let LONG-DASH = [---]
-#let LIST-DOT = [.]
+#let LIST-DOT = [)]
 #let leading = 1.5em
 #let LEADING = leading - 0.45em // Нормализация
 #let PAR-LEADING = LEADING
@@ -270,7 +270,8 @@
 
   show heading.where(level: 1): it => {
     if pagebreaks == true and in-appendix.get() == false {
-      pagebreak()
+      // pagebreak()
+      v(2.2 * PAR-LEADING)
     }
     it
   }
@@ -440,7 +441,6 @@ cor9: 0pt) = {
 }
 
 #context(counter(page).update(START-PAGE))
-
 #let co = math.class( // запятая с корректными отступами
   "punctuation",
   $op(", ", limits: #false)$
