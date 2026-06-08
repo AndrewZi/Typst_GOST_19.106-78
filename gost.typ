@@ -67,7 +67,6 @@
   it
   in-appendix.update(false)
 }
-
 #show outline.entry: it => {
   show linebreak: [ ]
   it
@@ -241,7 +240,6 @@
     }
     body
   }
-  
   // Выходим из режима приложения
   in-appendix.update(false)
   current-appendix-letter.update("")
@@ -250,7 +248,6 @@
 #let structure-heading-style = it => {
   align(center)[#upper(it)]
 }
-
 #let structure-heading(body) = {
   structure-heading-style(heading(numbering: none)[#body])
 }
@@ -297,146 +294,59 @@
 }
 
 // Листинг с поддержкой ссылок
-#let listing(title, code-content, label: none,
-cor0: 0pt,
-cor1: 0pt,
-cor2: 0pt,
-cor3: 0pt,
-cor4: 0pt,
-cor5: 0pt,
-cor6: 0pt,
-cor7: 0pt,
-cor8: 0pt,
-cor9: 0pt) = {
-  // Используем стандартный счетчик фигур для листингов
+#let listing(title, code-content, lang: none, label: none) = {
   context {
-    // Получаем номер текущего листинга из стандартного счетчика
     let listing-num = counter(figure.where(kind: listing-kind)).get().first() + 1
-    // Проверяем, находимся ли в приложении
     let is-in-appendix = in-appendix.get()
     let app-letter = if is-in-appendix { current-appendix-letter.get() } else { "" }
+    let display = if is-in-appendix { app-letter + "." + str(listing-num) } else { str(listing-num) }
     
-    // Формируем номер листинга с учетом приложения
-    let listing-display = if is-in-appendix {
-      [#app-letter.#listing-num]
-    } else {
-      str(listing-num)
-    }
+    let first-page = counter(page).get().first()
     
-    // Разбиваем код на строки
-    let code-lines = code-content.text.split("\n")
-    
-    // Функция для создания таблицы с кодом
-    let create-listing-table(lines, is-continuation: false, table-label: none) = {
-      let caption-text = if is-continuation {
-        [Продолжение листинга #listing-display]
-      } else {
-        [Листинг #listing-display --- #title]
-      }
-      
-      let fig = figure(
-        kind: listing-kind,
-        table(
-          columns: 1fr,
-          stroke: 0.5pt,
-          
-          // Содержимое таблицы
+    let fig = figure(
+      kind: listing-kind,
+      supplement: [Листинг],
+      caption: none,
+      table(
+        columns: 1fr,
+        stroke: 0.5pt,
+        table.header(
+          repeat: true,
+          table.cell(
+            stroke: none,
+            align: left,
+            inset: (left: 1pt, top: 1pt, bottom: LIST-INDENT),
+            context {
+              let current-page = counter(page).get().first()
+              let cap = if current-page == first-page {
+                [Листинг #display --- #title]
+              } else {
+                [Продолжение листинга #display]
+              }
+              set text(size: TEXT-SIZE)
+              cap
+            }
+          )
+        ),
+        table.cell(
+          align: left,
           block(
             width: 100%,
             {
               set text(size: TEXT-SIZE)
               set par(leading: LEADING)
-              
-              // Соединяем строки обратно
-              raw(lines)
-            },
+              raw(code-content.text, lang: lang)
+            }
           )
-        ),
-        supplement: none,
-        caption: caption-text
-      )
-      
-      // Применяем label если он есть
-      if table-label != none and is-continuation == false {
-        [#fig #table-label]
-      } else {
-        fig
-      }
-    }
-    
-    let pages = ()
-    let current-page = ()
-    let start_y = here().position().y
-    let is-continious = false
-    let page-count = 0
-    
-    for line in code-lines {
-      current-page.push(line)
-      
-      let height
-      (height,) = measure(
-        width: page.width,
-        create-listing-table(
-          current-page.join("\n"), 
-          is-continuation: is-continious
         )
       )
-
-      let cor
-      if page-count == 0 {
-        cor = cor0
-      } else if page-count == 1 {
-        cor = cor1
-      } else if page-count == 2 {
-        cor = cor2
-      } else if page-count == 3 {
-        cor = cor3
-      } else if page-count == 4 {
-        cor = cor4
-      } else if page-count == 5 {
-        cor = cor5
-      } else if page-count == 6 {
-        cor = cor6
-      } else if page-count == 7 {
-        cor = cor7
-      } else if page-count == 8 {
-        cor = cor8
-      } else {
-        cor = cor9
-      }
-      
-      if start_y + height >= page.height - page.margin.bottom.length - TEXT-SIZE - LEADING.to-absolute() - cor {
-        pages.push(current-page)
-        page-count += 1
-        if pages.len() > 1 {
-          is-continious = true
-        }
-        
-        let current-label = if page-count == 1 and label != none { label } else { none }
-        create-listing-table(
-          current-page.join("\n"),
-          is-continuation: is-continious, 
-          table-label: current-label
-        )
-        current-page = ()
-        start_y = page.margin.top.length
-      }
+    )
+    
+    if label != none {
+      [#fig #label]
+    } else {
+      fig
     }
-      
-    if current-page.len() > 0 {
-      pages.push(current-page)
-      page-count += 1
-      if pages.len() == 1 {
-        is-continious = false
-      } else {
-        is-continious = true
-      }
-      
-      let current-label = if page-count == 1 and label != none { label } else { none }
-      create-listing-table(current-page.join("\n"), is-continuation: is-continious, table-label: current-label)
-    }
-    counter(figure.where(kind: listing-kind)).update(n => n - page-count)
-    counter(figure.where(kind: listing-kind)).step()
   }
 }
 
